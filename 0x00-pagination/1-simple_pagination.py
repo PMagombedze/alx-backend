@@ -8,6 +8,7 @@ Simple Pagination
 
 from typing import Tuple
 import csv
+import math
 from typing import List
 
 
@@ -21,7 +22,7 @@ def index_range(page: int, page_size: int) -> Tuple[int, int]:
 class Server:
     """Server class to paginate a database of popular baby names.
     """
-    DATA_FILE = "/home/percy/alx-backend/0x00-pagination/Popular_Baby_Names.csv"
+    DATA_FILE = "Popular_Baby_Names.csv"
 
     def __init__(self):
         self.__dataset = None
@@ -47,4 +48,9 @@ class Server:
         with open(self.DATA_FILE) as f:
             reader = csv.reader(f)
             dataset = [row for row in reader]
-        return dataset[startIndex + 1: endIndex + 1]
+        totalSize = 19419
+        totalPages = math.ceil(totalSize / page_size)
+        if page > totalPages:
+            return []
+        else:
+            return [dataset[startIndex + 1: endIndex + 1]]
