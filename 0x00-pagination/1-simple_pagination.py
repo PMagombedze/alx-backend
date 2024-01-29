@@ -50,7 +50,7 @@ class Server:
             dataset = [row for row in reader]
         totalSize = 19419
         totalPages = math.ceil(totalSize / page_size)
-        if page > totalPages:
+        if page > totalPages or page_size > totalPages:
             return []
         else:
             return [dataset[startIndex + 1: endIndex + 1]]
