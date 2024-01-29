@@ -48,7 +48,7 @@ class Server:
         with open(self.DATA_FILE) as f:
             reader = csv.reader(f)
             dataset = [row for row in reader]
-        totalSize = 19419
+        totalSize = 19418
         totalPages = math.ceil(totalSize / page_size)
         if page > totalPages:
             return []
