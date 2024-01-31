@@ -9,13 +9,14 @@ class LFUCache(BaseCaching):
     def __init__(self):
         """initialize"""
         super().__init__()
-        self.__stats, self.__rlock = {}, RLock()
+        self.__stats = {}
+        self.__rlock = RLock()
 
     def put(self, key, item):
         """put in cache"""
         if key and item:
             with self.__rlock:
-                Outer = self._balance(key)
+                Outer = self.discard(key)
                 self.cache_data[key] = item
                 if Outer:
                     print(f'DISCARD: {Outer}')
@@ -28,8 +29,8 @@ class LFUCache(BaseCaching):
                 self.__stats[key] += 1
         return value
 
-    def _balance(self, keyIn):
-        """balance"""
+    def discard(self, keyIn):
+        """discard"""
         with self.__rlock:
             Outer = None
             bs = BaseCaching.MAX_ITEMS
