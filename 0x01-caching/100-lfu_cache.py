@@ -1,43 +1,35 @@
-#!/usr/bin/python3
-
-"""
-LFU Cache Class
-"""
+#!/usr/bin/env python3
 
 from threading import RLock
-
-
 BaseCaching = __import__('base_caching').BaseCaching
 
 
 class LFUCache(BaseCaching):
-    """LFU cache"""
-
+    """lfu class"""
     def __init__(self):
-        """Instantiation method"""
+        """initialize"""
         super().__init__()
-        self.__stats = {}
-        self.__rlock = RLock()
+        self.__stats, self.__rlock = {}, RLock()
 
     def put(self, key, item):
-        """Add item in the cache"""
-        if key is not None and item is not None:
+        """put in cache"""
+        if key and item:
             with self.__rlock:
                 Outer = self._balance(key)
-                self.cache_data.update({key: item})
-                if Outer is not None:
-                    print('DISCARD: {}'.format(Outer))
+                self.cache_data[key] = item
+                if Outer:
+                    print(f'DISCARD: {Outer}')
 
     def get(self, key):
-        """Get an item"""
+        """get item"""
         with self.__rlock:
             value = self.cache_data.get(key)
-            if value is not None:
+            if value:
                 self.__stats[key] += 1
         return value
 
     def _balance(self, keyIn):
-        """Removes the earliest item from the cache"""
+        """balance"""
         with self.__rlock:
             Outer = None
             bs = BaseCaching.MAX_ITEMS
