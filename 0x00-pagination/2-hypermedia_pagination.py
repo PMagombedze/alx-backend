@@ -1,26 +1,15 @@
 #!/usr/bin/env python3
 
-
 """
-Simple Pagination
+Hypermedia Pagination
 """
 
-
-from typing import Tuple
 import csv
-import math
-from typing import List, Dict
-
-
-def index_range(page: int, page_size: int) -> Tuple[int, int]:
-    """return a tuple of size two containing a start index and an end index"""
-    startIndex = (page - 1) * page_size
-    endIndex = startIndex + page_size
-    return startIndex, endIndex
-
+from typing import Dict, List, Tuple, Union
 
 class Server:
-    """Server class to paginate a database of popular baby names.
+    """
+    Server class
     """
     DATA_FILE = "Popular_Baby_Names.csv"
 
@@ -28,7 +17,8 @@ class Server:
         self.__dataset = None
 
     def dataset(self) -> List[List]:
-        """Cached dataset
+        """
+        Cached dataset
         """
         if self.__dataset is None:
             with open(self.DATA_FILE) as f:
@@ -38,41 +28,39 @@ class Server:
 
         return self.__dataset
 
-    def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
-        assert isinstance(
-            page, int) and page > 0
-        assert isinstance(
-            page_size, int) and page_size > 0
-        startIndex = (page - 1) * page_size
-        endIndex = startIndex + page_size
-        with open(self.DATA_FILE) as f:
-            reader = csv.reader(f)
-            dataset = [row for row in reader]
-        totalSize = 19419
-        totalPages = math.ceil(totalSize / page_size)
-        if page > totalPages:
-            return []
-        elif page_size > totalPages:
-            return []
-        else:
-            return dataset[startIndex + 1: endIndex + 1]
+    @staticmethod
+    def index_range(page: int, page_size: int) -> Tuple[int, int]:
+        """
+        Calculate index range
+        """
+        nextPageStartIndex = page * page_size
+        return nextPageStartIndex - page_size, nextPageStartIndex
 
-    def get_hyper(self, page: int = 1, page_size: int = 10) -> Dict:
-        totalSize = 19418
-        totalPages = math.ceil(totalSize / page_size)
-        flag = page_size
-        if page - 1 == 0:
-            prevPage = None
-        else:
-            prevPage = page - 1
-        if self.get_page(page, page_size) == []:
-            nextPage = None
-            flag = 0
-        else:
-            nextPage = page + 1
+    def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
+        """
+        Get page
+        """
+        assert isinstance(page, int) and isinstance(page_size, int)
+        assert page > 0 and page_size > 0
+        startIndex, endIndex = self.index_range(page, page_size)
+        return self.dataset()[startIndex:endIndex]
+
+    def get_hyper(self, page: int,
+                  page_size: int) -> Dict[str, Union[int, List[List], None]]:
+        """
+        Get hyper
+        """
+        data = self.get_page(page, page_size)
+        totalRows = len(self.dataset())
+        prev_page = page - 1 if page > 1 else None
+        next_page = page + 1 if self.index_range(page, page_size)[1] < totalRows else None
+        total_pages = totalRows // page_size + (1 if totalRows % page_size != 0 else 0)
+
         return {
-            "page_size": flag, "page": page,
-            "data": self.get_page(page, page_size),
-            "next_page": nextPage, "prev_page": prevPage,
-            "total_pages": totalPages
+            'page_size': len(data),
+            'page': page,
+            'data': data,
+            'next_page': next_page,
+            'prev_page': prev_page,
+            'total_pages': total_pages
         }
