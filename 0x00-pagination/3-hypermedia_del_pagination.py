@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
+
+
 """
-Deletion-resilient hypermedia pagination
+hypermedia pagination
 """
+
 
 import csv
 import math
@@ -9,7 +12,8 @@ from typing import Dict, List
 
 
 class Server:
-    """Server class to paginate a database of popular baby names.
+    """
+    Server class
     """
     DATA_FILE = "Popular_Baby_Names.csv"
 
@@ -18,7 +22,8 @@ class Server:
         self.__indexed_dataset = None
 
     def dataset(self) -> List[List]:
-        """Cached dataset
+        """
+        Cached dataset
         """
         if self.__dataset is None:
             with open(self.DATA_FILE) as f:
@@ -29,7 +34,8 @@ class Server:
         return self.__dataset
 
     def indexed_dataset(self) -> Dict[int, List]:
-        """Dataset indexed by sorting position, starting at 0
+        """
+        Dataset indexed by sorting position
         """
         if self.__indexed_dataset is None:
             dataset = self.dataset()
@@ -40,19 +46,17 @@ class Server:
         return self.__indexed_dataset
 
     def get_hyper_index(self, index: int = None, page_size: int = 10) -> Dict:
+        """
+        get hyper index
+        """
+        focus = []
         dataset = self.indexed_dataset()
-        if index is None:
-            index = 0
-        else:
-            index = index
+        index = 0 if index is None else index
         keys = sorted(dataset.keys())
         assert index >= 0 and index <= keys[-1]
-        lst: List = []
-        [lst.append(i)
-         for i in keys if i >= index and len(lst) <= page_size]
-        data = [dataset[n] for n in lst[:-1]]
-        next_index = lst[-1] if len(lst) - page_size == 1 else None
-        return {
-            'index': index, 'data': data,
-            'page_size': len(data), 'next_index': next_index
-        }
+        [focus.append(i)
+         for i in keys if i >= index and len(focus) <= page_size]
+        data = [dataset[v] for v in focus[:-1]]
+        next_index = focus[-1] if len(focus) - page_size == 1 else None
+        return {'index': index, 'data': data,
+                'page_size': len(data), 'next_index': next_index}
